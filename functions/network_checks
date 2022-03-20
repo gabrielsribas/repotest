@@ -1,0 +1,32 @@
+ip_check_status() {
+  host=$1
+  status=$(ping $host -c 1 2> /dev/null | grep packets | awk -F ',' '{print $3}' | sed 's/^\ //g' | awk '{gsub(/%/,"",$0);print $1}')
+  if [ "$status" == "0" ]; then
+    echo "PING - Response OK! EXIT_CODE.: $status"
+    return
+  fi
+  status=2
+  echo "PING - Response FAILED! EXIT_CODE.: $status"
+}
+
+dns_check_status() {
+  host=$1
+  status=$(nslookup $host | grep -A1 "Non-authoritative answer:" | grep ^Name -q; echo $?)
+  if [ $status == 0 ]; then
+    status=0
+    echo "DNS - Response OK! EXIT_CODE.: $status"
+    return
+  fi
+  status=2
+  echo "DNS - Response FAILED! EXIT_CODE.: $status"
+}
+
+request_check_status() {
+  host=$1
+  status_code=$(curl -o /dev/null -s -w "%{http_code}\n" $host)
+  if [ "$status_code" == "200" ]; then
+    echo "REQUEST - Response OK! STATUS_CODE.: $status_code"
+    return
+  fi
+  echo "REQUEST - Response FAILED! STATUS_CODE.: $status_code"
+}

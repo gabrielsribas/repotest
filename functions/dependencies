@@ -1,0 +1,10 @@
+install_packages_deps() {
+  packages=$@
+  for package in $packages
+    do
+      exists=$(dpkg -la | grep -Ewq "\s$package"; echo $?)
+      if [ ! "$exists" == "0" ]; then
+        apt install -y $package
+      fi
+    done
+}
